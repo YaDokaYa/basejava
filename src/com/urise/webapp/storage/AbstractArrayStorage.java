@@ -1,6 +1,5 @@
 package com.urise.webapp.storage;
 
-import com.urise.webapp.exception.ExistStorageException;
 import com.urise.webapp.exception.NotExistStorageException;
 import com.urise.webapp.exception.StorageException;
 import com.urise.webapp.model.Resume;
@@ -21,21 +20,13 @@ public abstract class AbstractArrayStorage extends AbstractStorage {
         System.out.println("\nThe " + storage.getClass().getSimpleName() + " was successfully cleared");
     }
 
-
-    public final void doUpdate(Resume r) {
-        Object searchKey= getSearchKey(r.getUuid());
-        if (!isExisting(searchKey)) {
-            throw new NotExistStorageException(r.getUuid());
-        }
-        storage[(Integer)searchKey] = r;
+    public final void doUpdate(Resume r, Object searchKey) {
+        storage[(Integer) searchKey] = r;
         System.out.println("\nElement " + r + " successfully update");
     }
 
-    public void doSave(Resume r) {
-        Object searchKey = getSearchKey(r.getUuid());
-        if (isExisting(searchKey)) {
-            throw new ExistStorageException(r.getUuid());
-        } else if (size == STORAGE_LIMIT) {
+    public final void doSave(Object searchKey, Resume r) {
+        if (size == STORAGE_LIMIT) {
             throw new StorageException("Storage overflow", r.getUuid());
         }
         insertResume(r);
@@ -43,11 +34,7 @@ public abstract class AbstractArrayStorage extends AbstractStorage {
         System.out.println("Element " + r + " successfully saved to storage.");
     }
 
-    public final Resume doGet(String uuid) {
-        Object searchKey = getSearchKey(uuid);
-        if (!isExisting(searchKey)) {
-            throw new NotExistStorageException(uuid);
-        }
+    public final Resume doGet(Object searchKey) {
         return storage[(Integer) searchKey];
     }
 
@@ -56,12 +43,11 @@ public abstract class AbstractArrayStorage extends AbstractStorage {
         if (!isExisting(searchKey)) {
             throw new NotExistStorageException(uuid);
         }
-        fillDeletedElement((Integer)searchKey);
+        fillDeletedElement((Integer) searchKey);
         storage[size - 1] = null;
         size--;
         System.out.println("\nElement " + uuid + " successfully deleted from storage");
     }
-
 
     public Resume[] getAll() {
         return Arrays.copyOf(storage, size);

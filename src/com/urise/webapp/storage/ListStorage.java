@@ -15,28 +15,20 @@ public class ListStorage extends AbstractStorage {
         storage.clear();
     }
 
+
     @Override
-    public void doUpdate(Resume r) {
+    protected boolean isExisting(Object searchKey) {
+        return searchKey != null && (Integer) searchKey >= 0;
+    }
+
+    @Override
+    public void doUpdate(Resume r, Object searchKey) {
         Resume resume = get(r.getUuid());
         storage.set(storage.indexOf(resume), r);
     }
 
-    public final void save(Resume r) {
-        doSave(r);
-    }
-
     @Override
-    protected boolean isExisting(Object searchKey) {
-        for (Resume resume : storage) {
-        if (resume.getUuid().equals(searchKey)) {
-            return true;
-        }
-    }
-        return false;
-    }
-
-    @Override
-    public void doSave(Resume r) {
+    public void doSave(Object searchKey, Resume r) {
         if (storage.contains(r)) {
             throw new ExistStorageException(r.getUuid());
         }
@@ -44,13 +36,12 @@ public class ListStorage extends AbstractStorage {
     }
 
     @Override
-    public Resume doGet(String uuid) {
-        for (Resume resume : storage) {
-            if (resume.getUuid().equals(uuid)) {
-                return resume;
-            }
+    public Resume doGet(Object searchKey) {
+        int index = (Integer) searchKey;
+        if (index >= 0 && index < storage.size()) {
+            return storage.get(index);
         }
-        throw new NotExistStorageException(uuid);
+        throw new NotExistStorageException((String) searchKey);
     }
 
     @Override
@@ -60,13 +51,12 @@ public class ListStorage extends AbstractStorage {
     }
 
     @Override
-    protected Object getSearchKey(String uuid) {
-        for (Resume resume : storage) {
-            if (resume.getUuid().equals(uuid)) {
-                return uuid;
+    protected Integer getSearchKey(String uuid) {
+        for (int i = 0; i < storage.size(); i++)
+            if (storage.get(i).getUuid().equals(uuid)) {
+                return i;
             }
-        }
-        return null;
+        return -1;
     }
 
     @Override

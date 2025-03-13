@@ -114,5 +114,4 @@ public class MapStorageTest {
     private void assertSize(int expectedSize) {
         assertEquals(expectedSize, mapStorage.size());
     }
-
 }

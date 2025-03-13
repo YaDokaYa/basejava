@@ -1,6 +1,5 @@
 package com.urise.webapp.storage;
 
-import com.urise.webapp.exception.NotExistStorageException;
 import com.urise.webapp.model.Resume;
 
 import java.util.LinkedHashMap;
@@ -11,44 +10,35 @@ public class MapStorage extends AbstractStorage {
 
     @Override
     protected boolean isExisting(Object searchKey) {
-        return storage.containsKey(searchKey);
+        return searchKey != null && storage.containsKey(searchKey);
     }
 
     @Override
-    protected void doUpdate(Resume r) {
-        if (!isExisting(r.getUuid())) {
-            throw new NotExistStorageException(r.getUuid());
-        }
+    protected void doUpdate(Resume r, Object searchKey) {
         storage.put(r.getUuid(), r);
     }
 
     @Override
-    protected void doSave(Resume r) {
-        if (isExisting(r.getUuid())) {
+    protected void doSave(Object searchKey, Resume r) {
+        if (searchKey != null) {
             throw new IllegalArgumentException(r.getUuid());
         }
         storage.put(r.getUuid(), r);
     }
 
     @Override
-    protected Resume doGet(String uuid) {
-        if (!isExisting(uuid)) {
-            throw new NotExistStorageException(uuid);
-        }
-        return storage.get(uuid);
+    protected Resume doGet(Object searchKey) {
+        return storage.get(searchKey);
     }
 
     @Override
     protected void doDelete(String uuid) {
-        if (!isExisting(uuid)) {
-            throw new NotExistStorageException(uuid);
-        }
         storage.remove(uuid);
     }
 
     @Override
-    protected Object getSearchKey(String uuid) {
-        return storage.get(uuid);
+    protected String getSearchKey(String uuid) {
+        return storage.containsKey(uuid) ? uuid : null;
     }
 
     @Override
@@ -58,9 +48,7 @@ public class MapStorage extends AbstractStorage {
 
     @Override
     public Resume[] getAll() {
- return storage.values().toArray(new Resume[0]);
-//        List<Resume> resumeList = new ArrayList<>(storage.values());
-//        return resumeList.toArray(new Resume[0]);
+        return storage.values().toArray(new Resume[0]);
     }
 
     @Override
